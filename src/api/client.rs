@@ -100,7 +100,7 @@ impl Client {
     /// assert!(result.is_ok());
     /// ```
     #[cfg(not(feature = "async"))]
-    pub fn list(&self) -> Result<Vec<crate::api::list::Model>, Box<dyn std::error::Error>> {
+    pub fn list(&self) -> Result<Vec<crate::structs::model::Model>, Box<dyn std::error::Error>> {
         list(Some(self))
     }
 
@@ -124,7 +124,7 @@ impl Client {
     /// }
     /// ```
     #[cfg(feature = "async")]
-    pub async fn list(&self) -> Result<Vec<crate::api::list::Model>, Box<dyn std::error::Error>> {
+    pub async fn list(&self) -> Result<Vec<crate::structs::model::Model>, Box<dyn std::error::Error>> {
         list(Some(self)).await
     }
 }

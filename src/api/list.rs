@@ -1,13 +1,8 @@
 use crate::constants::API_TAGS_ENDPOINT;
-use serde::{Deserialize, Serialize};
 use std::error::Error;
 use crate::api::client::Client;
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Model {
-    pub name: String,
-    pub description: Option<String>,
-}
+use crate::structs::model::Model;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ModelsResponse {
