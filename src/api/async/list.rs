@@ -1,5 +1,6 @@
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use crate::constants::API_TAGS_ENDPOINT;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Model {
@@ -34,13 +35,13 @@ pub struct ModelsResponse {
 /// #[tokio::main]
 /// async fn main() {
 ///     let client = Client::new();
-///     let base_url = "http://0.0.0.0:11434";
+///     let base_url = "http://0.0.0.0:11434"; // Use your actual API base URL here
 ///     let result = list_models(&client, base_url).await;
 ///     assert!(result.is_ok());
 /// }
 /// ```
 pub async fn list_models(client: &Client, base_url: &str) -> Result<Vec<Model>, Box<dyn std::error::Error>> {
-    let url = format!("{}/api/tags", base_url);
+    let url = format!("{}{}", base_url, API_TAGS_ENDPOINT);
     let response = client.get(&url).send().await?;
 
     // Print the raw response for debugging
@@ -56,11 +57,12 @@ pub async fn list_models(client: &Client, base_url: &str) -> Result<Vec<Model>, 
 mod tests {
     use super::*;
     use reqwest::Client;
+    use crate::constants::TEST_ENDPOINT;
 
     #[tokio::test]
     async fn test_list_models_async() {
         let client = Client::new();
-        let base_url = "http://0.0.0.0:11434";
+        let base_url = TEST_ENDPOINT;
 
         match list_models(&client, base_url).await {
             Ok(models) => {
