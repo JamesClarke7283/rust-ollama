@@ -1,0 +1,34 @@
+[package]
+name = "ollama"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+repository = "https://github.com/JamesClarke7283/rust-ollama"
+categories = ["api-bindings"]
+keywords = ["ollama", "ai", "artificial inteligence", "library", "lib"]
+authors = ["James David Clarke <james@jamesdavidclarke.com>"]
+
+[dependencies]
+reqwest = "0.12"
+serde = "1.0"
+simd-json = "0.13"
+thiserror = "1.0"
+
+[features]
+log = ["log=>0.4"]
+async = ["tokio=>1"]
+
+default = ["async"]
+
+# Lints
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+pedantic = "warn"
+nursery = "warn"
+perf = "warn"
+style = "warn"
+complexity = "warn"
+suspicious = "warn"
+correctness = "warn"
