@@ -1,4 +1,3 @@
-// ./src/api/mod.rs
 #[cfg(feature = "async")]
 pub mod client {
     pub use super::r#async::client::Client;
@@ -11,12 +10,12 @@ pub mod client {
 
 #[cfg(feature = "async")]
 pub mod list {
-    pub use super::r#async::list::list_models;
+    pub use super::r#async::list::list;
 }
 
 #[cfg(not(feature = "async"))]
 pub mod list {
-    pub use super::sync::list::list_models;
+    pub use super::sync::list::list;
 }
 
 #[cfg(feature = "async")]

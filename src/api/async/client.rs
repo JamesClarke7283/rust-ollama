@@ -1,4 +1,8 @@
 use reqwest::Client as ReqwestClient;
+#[cfg(feature = "logging")]
+use crate::logging::init_logger;
+#[cfg(feature = "logging")]
+use log::info;
 
 /// A client for interacting with the API asynchronously.
 ///
@@ -38,6 +42,12 @@ impl Client {
     /// let client = Client::new("http://0.0.0.0:11434");
     /// ```
     pub fn new(base_url: &str) -> Self {
+        #[cfg(feature = "logging")]
+        init_logger();
+
+        #[cfg(feature = "logging")]
+        info!("Creating new asynchronous API client with base URL: {}", base_url);
+
         Self {
             base_url: base_url.to_string(),
             client: ReqwestClient::new(),
