@@ -1,5 +1,5 @@
 #[cfg(feature = "async")]
-pub use crate::api::async_api::*;
+pub use crate::api::list::list_models;
 
 #[cfg(not(feature = "async"))]
-pub use crate::api::sync_api::*;
+pub use crate::api::list::list_models;

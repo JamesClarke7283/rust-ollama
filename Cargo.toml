@@ -9,11 +9,11 @@ keywords = ["ollama", "ai", "artificial inteligence", "library", "lib"]
 authors = ["James David Clarke <james@jamesdavidclarke.com>"]
 
 [dependencies]
-reqwest = "0.12"
-serde = "1.0"
-simd-json = "0.13"
+reqwest = {version="0.12", features = ["blocking", "json"]}
+serde = {version = "1.0", features = ["derive"]}
+serde_json = "1"
 thiserror = "1.0"
-tokio = {version = "1", optional = true}
+tokio = {version = "1", features = ["full"], optional = true}
 log = {version = "0.4", optional = true}
 dotenv = {version = "0.15", optional = true}
 env_logger = {version = "0.11", optional = true}

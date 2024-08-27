@@ -1,20 +1,22 @@
+#[cfg(feature = "logging")]
 use dotenv::dotenv;
+
+#[cfg(feature = "logging")]
 use log::{info, LevelFilter};
+
+#[cfg(feature = "logging")]
 use std::env;
 
-#[feature("logging")]
+#[cfg(feature = "logging")]
 pub fn init_logger() {
-    // Load environment variables from a .env file, if present
     dotenv().ok();
 
-    // Set the default logging level to INFO if not specified in RUST_LOG
     if env::var("RUST_LOG").is_err() {
         env::set_var("RUST_LOG", "info");
     }
 
-    // Initialize the logger
     env_logger::Builder::from_default_env()
-        .filter(None, LevelFilter::Info) // Set default filter level
+        .filter(None, LevelFilter::Info)
         .init();
 
     info!("Logger initialized");
