@@ -1,6 +1,6 @@
 use reqwest::Client as ReqwestClient;
 use crate::api::list::list;
-use crate::structs::partialmodel::PartialModel; // Adjusted import
+use crate::structs::partialmodel::PartialModel;
 
 #[cfg(feature = "logging")]
 use crate::logging::init_logger;
@@ -8,138 +8,85 @@ use crate::logging::init_logger;
 use log::info;
 
 /// A client for interacting with the API either synchronously or asynchronously.
-///
-/// This client allows you to specify a base URL for the API and provides
-/// a pre-configured `reqwest::Client` or `reqwest::blocking::Client` instance
-/// to make HTTP requests depending on whether the `async` feature is enabled.
-///
-/// # Examples
-///
-/// ```
-/// use ollama::prelude::*;
-///
-/// let client = Client::new("http://0.0.0.0:11434");
-/// let base_url = client.base_url();
-/// let reqwest_client = client.client();
-/// ```
-///
-/// The example above creates a new `Client` for making either synchronous or asynchronous API calls.
 #[derive(Clone)]
-pub struct Client {
-    base_url: String,
+pub struct Ollama {
+    host: String,
+    port: Option<u16>,
     client: ReqwestClient,
 }
 
-impl Client {
-    /// Creates a new API client with the given base URL.
-    ///
-    /// # Arguments
-    ///
-    /// * `base_url` - The base URL of the API.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use ollama::prelude::*;
-    ///
-    /// let client = Client::new("http://0.0.0.0:11434");
-    /// ```
-    pub fn new(base_url: &str) -> Self {
+impl Ollama {
+    /// Creates a new API client with the default host and port.
+    /// Defaults to "http://localhost" and port 11434 if not specified.
+    pub fn new() -> Self {
         #[cfg(feature = "logging")]
         init_logger();
 
         #[cfg(feature = "logging")]
-        info!("Creating new API client with base URL: {}", base_url);
+        info!("Creating new API client with default values.");
 
         Self {
-            base_url: base_url.to_string(),
+            host: "http://localhost".to_string(),
+            port: Some(11434),
             client: ReqwestClient::new(),
         }
     }
 
-    /// Returns the base URL of the API.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use ollama::prelude::*;
-    ///
-    /// let client = Client::new("http://0.0.0.0:11434");
-    /// assert_eq!(client.base_url(), "http://0.0.0.0:11434");
-    /// ```
-    pub fn base_url(&self) -> &str {
-        &self.base_url
+    /// Sets a custom host for the API client.
+    pub fn with_host(mut self, host: &str) -> Self {
+        self.host = host.to_string();
+        self
     }
 
-    /// Returns a reference to the `reqwest::Client` or `reqwest::blocking::Client` used for making requests.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use ollama::prelude::*;
-    ///
-    /// let client = Client::new("http://0.0.0.0:11434");
-    /// let reqwest_client = client.client();
-    /// ```
+    /// Sets a custom port for the API client.
+    pub fn with_port(mut self, port: u16) -> Self {
+        self.port = Some(port);
+        self
+    }
+
+    /// Calculates the base URL based on the host and port.
+    pub fn base_url(&self) -> String {
+        match self.port {
+            Some(port) => format!("{}:{}", self.host, port),
+            None => self.host.clone(),
+        }
+    }
+
+    /// Returns a reference to the `reqwest::Client` used for making requests.
     pub fn client(&self) -> &ReqwestClient {
         &self.client
     }
 
     /// Lists partial models from the API using the appropriate list function.
-    ///
-    /// # Returns
-    ///
-    /// A result containing a vector of `PartialModel` instances or an error.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use ollama::prelude::*;
-    ///
-    /// let client = Client::new("http://0.0.0.0:11434");
-    /// let result = client.list();
-    /// assert!(result.is_ok());
-    /// ```
     #[cfg(not(feature = "async"))]
-    pub fn list(&self) -> Result<Vec<PartialModel>, Box<dyn std::error::Error>> { // Updated return type
+    pub fn list(&self) -> Result<Vec<PartialModel>, Box<dyn std::error::Error>> {
         list(Some(self))
     }
 
     /// Lists partial models from the API asynchronously using the appropriate list function.
-    ///
-    /// # Returns
-    ///
-    /// A result containing a vector of `PartialModel` instances or an error.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use ollama::prelude::*;
-    /// use tokio;
-    ///
-    /// #[tokio::main]
-    /// async fn main() {
-    ///     let client = Client::new("http://0.0.0.0:11434");
-    ///     let result = client.list().await;
-    ///     assert!(result.is_ok());
-    /// }
-    /// ```
     #[cfg(feature = "async")]
-    pub async fn list(&self) -> Result<Vec<PartialModel>, Box<dyn std::error::Error>> { // Updated return type
+    pub async fn list(&self) -> Result<Vec<PartialModel>, Box<dyn std::error::Error>> {
         list(Some(self)).await
+    }
+}
+
+impl Default for Ollama {
+    fn default() -> Self {
+        Ollama::new()
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::constants::TEST_ENDPOINT;
+    use crate::constants::TEST_ENDPOINT_HOST;
+    use crate::constants::TEST_ENDPOINT_PORT;
 
     #[cfg(not(feature = "async"))]
     #[test]
-    fn test_client_sync_list() {
-        let client = Client::new(TEST_ENDPOINT);
-        let result = client.list();
+    fn test_ollama_sync_list() {
+        let ollama = Ollama::new().with_host(TEST_ENDPOINT_HOST).with_port(TEST_ENDPOINT_PORT);
+        let result = ollama.list();
 
         match result {
             Ok(models) => assert!(!models.is_empty(), "Model list should not be empty"),
@@ -149,9 +96,9 @@ mod tests {
 
     #[cfg(feature = "async")]
     #[tokio::test]
-    async fn test_client_async_list() {
-        let client = Client::new(TEST_ENDPOINT);
-        let result = client.list().await;
+    async fn test_ollama_async_list() {
+        let ollama = Ollama::new().with_host(TEST_ENDPOINT_HOST).with_port(TEST_ENDPOINT_PORT);
+        let result = ollama.list().await;
 
         match result {
             Ok(models) => assert!(!models.is_empty(), "Model list should not be empty"),

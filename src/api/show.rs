@@ -1,6 +1,6 @@
 use crate::constants::SHOW_ENDPOINT;
 use crate::structs::model::ModelDetails;
-use crate::api::client::Client;
+use crate::api::client::Ollama;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 
@@ -33,7 +33,7 @@ pub struct ShowResponse {
 ///
 /// # Arguments
 ///
-/// * `client` - An optional reference to a `Client` instance.
+/// * `client` - An optional reference to a `Ollama` instance.
 /// * `name` - The name of the model to retrieve information about.
 /// * `verbose` - An optional boolean flag to request more detailed information.
 ///
@@ -46,8 +46,8 @@ pub struct ShowResponse {
 /// ```
 /// use ollama::prelude::*;
 ///
-/// let client = Client::new("http://0.0.0.0:11434");
-/// let response = show(Some(&client), "llama3.1:8b-instruct-q6_K", Some(true)).unwrap();
+/// let ollama = Ollama::new().with_host("http://0.0.0.0").with_port(11434);
+/// let response = show(Some(&ollama), "llama3.1:8b-instruct-q6_K", Some(true)).unwrap();
 /// assert!(response.modelfile.contains("llama3.1"));
 /// ```
 ///
@@ -55,12 +55,12 @@ pub struct ShowResponse {
 ///
 /// This function returns an error if the HTTP request fails or if the response cannot be deserialized.
 #[cfg(not(feature = "async"))]
-pub fn show(client: Option<&Client>, name: &str, verbose: Option<bool>) -> Result<ShowResponse, Box<dyn Error>> {
+pub fn show(client: Option<&Ollama>, name: &str, verbose: Option<bool>) -> Result<ShowResponse, Box<dyn Error>> {
     use reqwest::blocking::Client as BlockingClient;
 
     let url = match client {
         Some(client) => format!("{}{}", client.base_url(), SHOW_ENDPOINT),
-        None => format!("{}{}", crate::constants::TEST_ENDPOINT, SHOW_ENDPOINT),
+        None => format!("{}{}", crate::constants::TEST_ENDPOINT_HOST, SHOW_ENDPOINT),
     };
 
     #[cfg(feature = "logging")]
@@ -90,7 +90,7 @@ pub fn show(client: Option<&Client>, name: &str, verbose: Option<bool>) -> Resul
 ///
 /// # Arguments
 ///
-/// * `client` - An optional reference to a `Client` instance.
+/// * `client` - An optional reference to a `Ollama` instance.
 /// * `name` - The name of the model to retrieve information about.
 /// * `verbose` - An optional boolean flag to request more detailed information.
 ///
@@ -106,8 +106,8 @@ pub fn show(client: Option<&Client>, name: &str, verbose: Option<bool>) -> Resul
 ///
 /// #[tokio::main]
 /// async fn main() {
-///     let client = Client::new("http://0.0.0.0:11434");
-///     let response = show(Some(&client), "llama3.1:8b-instruct-q6_K", Some(true)).await.unwrap();
+///     let ollama = Ollama::new().with_host("http://0.0.0.0").with_port(11434);
+///     let response = show(Some(&ollama), "llama3.1:8b-instruct-q6_K", Some(true)).await.unwrap();
 ///     assert!(response.modelfile.contains("llama3.1"));
 /// }
 /// ```
@@ -116,10 +116,10 @@ pub fn show(client: Option<&Client>, name: &str, verbose: Option<bool>) -> Resul
 ///
 /// This function returns an error if the HTTP request fails or if the response cannot be deserialized.
 #[cfg(feature = "async")]
-pub async fn show(client: Option<&Client>, name: &str, verbose: Option<bool>) -> Result<ShowResponse, Box<dyn Error>> {
+pub async fn show(client: Option<&Ollama>, name: &str, verbose: Option<bool>) -> Result<ShowResponse, Box<dyn Error>> {
     let url = match client {
         Some(client) => format!("{}{}", client.base_url(), SHOW_ENDPOINT),
-        None => format!("{}{}", crate::constants::TEST_ENDPOINT, SHOW_ENDPOINT),
+        None => format!("{}:{}{}", crate::constants::TEST_ENDPOINT_HOST, crate::constants::TEST_ENDPOINT_PORT, SHOW_ENDPOINT),
     };
 
     #[cfg(feature = "logging")]
@@ -149,12 +149,13 @@ pub async fn show(client: Option<&Client>, name: &str, verbose: Option<bool>) ->
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::constants::TEST_ENDPOINT;
+    use crate::constants::TEST_ENDPOINT_HOST;
+    use crate::constants::TEST_ENDPOINT_PORT;
 
     #[cfg(not(feature = "async"))]
     #[test]
     fn test_show_sync_with_client() {
-        let client = Client::new(TEST_ENDPOINT);
+        let client = Ollama::new().with_host(TEST_ENDPOINT_HOST).with_port(TEST_ENDPOINT_PORT);
         let result = show(Some(&client), "llama3.1:8b-instruct-q6_K", Some(true));
 
         match result {
@@ -171,7 +172,7 @@ mod tests {
     #[cfg(feature = "async")]
     #[tokio::test]
     async fn test_show_async_with_client() {
-        let client = Client::new(TEST_ENDPOINT);
+        let client = Ollama::new().with_host(TEST_ENDPOINT_HOST).with_port(TEST_ENDPOINT_PORT);
         let result = show(Some(&client), "llama3.1:8b-instruct-q6_K", Some(true)).await;
 
         match result {

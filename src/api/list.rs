@@ -1,6 +1,6 @@
 use crate::constants::API_TAGS_ENDPOINT;
 use std::error::Error;
-use crate::api::client::Client;
+use crate::api::client::Ollama;
 use crate::structs::partialmodel::PartialModel;
 use serde::{Deserialize, Serialize};
 
@@ -13,7 +13,7 @@ pub struct ModelsResponse {
 ///
 /// # Arguments
 ///
-/// * `client` - An optional reference to the `Client` struct. If `None`, uses the default base URL.
+/// * `client` - An optional reference to the `Ollama` struct. If `None`, uses the default host and port.
 ///
 /// # Returns
 ///
@@ -28,12 +28,12 @@ pub struct ModelsResponse {
 /// assert!(result.is_ok());
 /// ```
 #[cfg(not(feature = "async"))]
-pub fn list(client: Option<&Client>) -> Result<Vec<PartialModel>, Box<dyn Error>> {
+pub fn list(client: Option<&Ollama>) -> Result<Vec<PartialModel>, Box<dyn std::error::Error>> {
     use reqwest::blocking::Client as BlockingClient;
 
     let url = match client {
         Some(client) => format!("{}{}", client.base_url(), API_TAGS_ENDPOINT),
-        None => format!("{}{}", crate::constants::TEST_ENDPOINT, API_TAGS_ENDPOINT),
+        None => format!("http://0.0.0.0:11434{}", API_TAGS_ENDPOINT),
     };
 
     #[cfg(feature = "logging")]
@@ -57,7 +57,7 @@ pub fn list(client: Option<&Client>) -> Result<Vec<PartialModel>, Box<dyn Error>
 ///
 /// # Arguments
 ///
-/// * `client` - An optional reference to the `Client` struct. If `None`, uses the default base URL.
+/// * `client` - An optional reference to the `Ollama` struct. If `None`, uses the default host and port.
 ///
 /// # Returns
 ///
@@ -76,10 +76,10 @@ pub fn list(client: Option<&Client>) -> Result<Vec<PartialModel>, Box<dyn Error>
 /// }
 /// ```
 #[cfg(feature = "async")]
-pub async fn list(client: Option<&Client>) -> Result<Vec<PartialModel>, Box<dyn Error>> {
+pub async fn list(client: Option<&Ollama>) -> Result<Vec<PartialModel>, Box<dyn std::error::Error>> {
     let url = match client {
         Some(client) => format!("{}{}", client.base_url(), API_TAGS_ENDPOINT),
-        None => format!("{}{}", crate::constants::TEST_ENDPOINT, API_TAGS_ENDPOINT),
+        None => format!("http://0.0.0.0:11434{}", API_TAGS_ENDPOINT),
     };
 
     #[cfg(feature = "logging")]
@@ -103,12 +103,13 @@ pub async fn list(client: Option<&Client>) -> Result<Vec<PartialModel>, Box<dyn 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::constants::TEST_ENDPOINT;
+    use crate::constants::TEST_ENDPOINT_HOST;
+    use crate::constants::TEST_ENDPOINT_PORT;
 
     #[cfg(not(feature = "async"))]
     #[test]
     fn test_list_sync_with_client() {
-        let client = Client::new(TEST_ENDPOINT);
+        let client = Ollama::new().with_host(TEST_ENDPOINT_HOST).with_port(TEST_ENDPOINT_PORT);
         let result = list(Some(&client));
 
         match result {
@@ -131,7 +132,7 @@ mod tests {
     #[cfg(feature = "async")]
     #[tokio::test]
     async fn test_list_async_with_client() {
-        let client = Client::new(TEST_ENDPOINT);
+        let client = Ollama::new().with_host(TEST_ENDPOINT_HOST).with_port(TEST_ENDPOINT_PORT);
         let result = list(Some(&client)).await;
 
         match result {
