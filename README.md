@@ -1,5 +1,5 @@
-# rust-ollama
-Rust implementation of Ollama, using the rest API.
+# Rust Ollama
+Rust bindings to Ollama, using the rest API.
 
 
 ## TODOs
