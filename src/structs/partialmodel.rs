@@ -29,7 +29,6 @@ impl PartialModel {
     ///
     /// ```
     /// use ollama::prelude::*;
-    /// use ollama::structs::partialmodel::PartialModel;
     /// use tokio; // Import the Tokio runtime for the async test
     ///
     /// #[tokio::main]
