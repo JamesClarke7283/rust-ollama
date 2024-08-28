@@ -1,5 +1,6 @@
 use reqwest::Client as ReqwestClient;
 use crate::api::list::list;
+use crate::structs::partialmodel::PartialModel; // Adjusted import
 
 #[cfg(feature = "logging")]
 use crate::logging::init_logger;
@@ -84,11 +85,11 @@ impl Client {
         &self.client
     }
 
-    /// Lists models from the API using the appropriate list function.
+    /// Lists partial models from the API using the appropriate list function.
     ///
     /// # Returns
     ///
-    /// A result containing a vector of `Model` instances or an error.
+    /// A result containing a vector of `PartialModel` instances or an error.
     ///
     /// # Examples
     ///
@@ -100,15 +101,15 @@ impl Client {
     /// assert!(result.is_ok());
     /// ```
     #[cfg(not(feature = "async"))]
-    pub fn list(&self) -> Result<Vec<crate::structs::model::Model>, Box<dyn std::error::Error>> {
+    pub fn list(&self) -> Result<Vec<PartialModel>, Box<dyn std::error::Error>> { // Updated return type
         list(Some(self))
     }
 
-    /// Lists models from the API asynchronously using the appropriate list function.
+    /// Lists partial models from the API asynchronously using the appropriate list function.
     ///
     /// # Returns
     ///
-    /// A result containing a vector of `Model` instances or an error.
+    /// A result containing a vector of `PartialModel` instances or an error.
     ///
     /// # Examples
     ///
@@ -124,7 +125,37 @@ impl Client {
     /// }
     /// ```
     #[cfg(feature = "async")]
-    pub async fn list(&self) -> Result<Vec<crate::structs::model::Model>, Box<dyn std::error::Error>> {
+    pub async fn list(&self) -> Result<Vec<PartialModel>, Box<dyn std::error::Error>> { // Updated return type
         list(Some(self)).await
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::constants::TEST_ENDPOINT;
+
+    #[cfg(not(feature = "async"))]
+    #[test]
+    fn test_client_sync_list() {
+        let client = Client::new(TEST_ENDPOINT);
+        let result = client.list();
+
+        match result {
+            Ok(models) => assert!(!models.is_empty(), "Model list should not be empty"),
+            Err(e) => panic!("Failed to fetch models: {}", e),
+        }
+    }
+
+    #[cfg(feature = "async")]
+    #[tokio::test]
+    async fn test_client_async_list() {
+        let client = Client::new(TEST_ENDPOINT);
+        let result = client.list().await;
+
+        match result {
+            Ok(models) => assert!(!models.is_empty(), "Model list should not be empty"),
+            Err(e) => panic!("Failed to fetch models: {}", e),
+        }
     }
 }

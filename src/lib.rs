@@ -1,6 +1,6 @@
 pub(crate) mod api;
 pub(crate) mod constants;
-pub(crate) mod structs;
+pub mod structs;
 
 #[cfg(feature = "logging")]
 pub(crate) mod logging;
