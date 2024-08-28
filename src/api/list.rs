@@ -1,5 +1,4 @@
 use crate::constants::API_TAGS_ENDPOINT;
-use std::error::Error;
 use crate::api::client::Ollama;
 use crate::structs::partialmodel::PartialModel;
 use serde::{Deserialize, Serialize};

@@ -28,7 +28,7 @@ Rust bindings to Ollama, using the rest API.
 - [ ] Implement `POST /api/chat` endpoint
 - [ ] Implement `POST /api/create` endpoint
 - [x] Implement `GET /api/tags` endpoint
-- [ ] Implement `POST /api/show` endpoint
+- [x] Implement `POST /api/show` endpoint
 - [ ] Implement `POST /api/copy` endpoint
 - [ ] Implement `DELETE /api/delete` endpoint
 - [ ] Implement `POST /api/pull` endpoint
